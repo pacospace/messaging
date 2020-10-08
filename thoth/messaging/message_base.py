@@ -72,6 +72,7 @@ class MessageBase:
         self.bootstrap_server = os.getenv("KAFKA_BOOTSTRAP_SERVERS") or bootstrap_server
         self.topic_retention_time_second = topic_retention_time_second
         self.protocol = os.getenv("KAFKA_PROTOCOL") or protocol
+        self.consumer_auto_offset_reset = "earliest" or "latest"
 
         if MessageBase.app is None:
             self.start_app()
@@ -88,6 +89,7 @@ class MessageBase:
         """Start Faust app."""
         self.ssl_context = None
         db_store = os.getenv("THOTH_MESSAGING_DB_LOCATION", None)
+        consumer_auto_offset_reset = os.getenv("THOTH_MESSAGING_CONSUMER_AUTO_OFFSET_RESET", "earliest")
         if self.ssl_auth == 1:
             self.cafile = os.getenv("KAFKA_CAFILE") or "ca.crt"
             self.ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=self.cafile)
@@ -103,6 +105,7 @@ class MessageBase:
                 ssl_context=self.ssl_context,
                 store="rocksdb://",
                 datadir=db_store,
+                consumer_auto_offset_reset=consumer_auto_offset_reset
             )
         MessageBase.app = app
 

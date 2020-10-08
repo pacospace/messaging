@@ -88,6 +88,9 @@ class MessageBase:
         """Start Faust app."""
         self.ssl_context = None
         db_store = os.getenv("THOTH_MESSAGING_DB_LOCATION", None)
+        consumer_auto_offset_reset = os.getenv("THOTH_MESSAGING_CONSUMER_AUTO_OFFSET_RESET", "earliest")
+        # This size must be at least as large as the maximum message size.
+        consumer_max_fetch_size = int(os.getenv("THOTH_MESSAGING_CONSUMER_MAX_FETCH_SIZE", 4*1024**2))
         if self.ssl_auth == 1:
             self.cafile = os.getenv("KAFKA_CAFILE") or "ca.crt"
             self.ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=self.cafile)
@@ -103,6 +106,8 @@ class MessageBase:
                 ssl_context=self.ssl_context,
                 store="rocksdb://",
                 datadir=db_store,
+                consumer_auto_offset_reset=consumer_auto_offset_reset,
+                consumer_max_fetch_size=consumer_max_fetch_size
             )
         MessageBase.app = app
 
